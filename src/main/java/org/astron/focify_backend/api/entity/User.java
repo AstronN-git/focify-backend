@@ -7,13 +7,13 @@ import lombok.Getter;
 @Entity
 @Table(
         name = "tb_users",
-        uniqueConstraints=@UniqueConstraint(columnNames = {"login"})
+        uniqueConstraints=@UniqueConstraint(columnNames = {"username"})
 )
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String login;
+    private String username;
     private String password;
 }

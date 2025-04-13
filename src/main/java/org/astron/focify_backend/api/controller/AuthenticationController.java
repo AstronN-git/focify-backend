@@ -22,18 +22,18 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest authenticationRequest) {
-        if (authenticationRequest.getLogin() == null || authenticationRequest.getPassword() == null) {
+        if (authenticationRequest.getUsername() == null || authenticationRequest.getPassword() == null) {
             AuthenticationResponse response = AuthenticationResponse.builder().error("Username or password not present").build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         try {
-            String token = authenticationService.login(authenticationRequest.getLogin(), authenticationRequest.getPassword());
+            String token = authenticationService.login(authenticationRequest.getUsername(), authenticationRequest.getPassword());
             AuthenticationResponse response = AuthenticationResponse.builder().token(token).build();
 
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (AuthenticationException ignored) {
-            AuthenticationResponse response = AuthenticationResponse.builder().error("Wrong username/password").build();
+        } catch (AuthenticationException exception) {
+            AuthenticationResponse response = AuthenticationResponse.builder().error("Incorrect username/password").build();
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
