@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.astron.focify_backend.api.entity.User;
 import org.astron.focify_backend.api.exception.AuthenticationException;
+import org.astron.focify_backend.api.exception.SignupException;
 import org.astron.focify_backend.api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -41,11 +42,40 @@ public class AuthenticationService {
         String jws = Jwts
                 .builder()
                 .subject(username)
-                .signWith(jwtKey)
                 .issuedAt(new Date())
+                .signWith(jwtKey)
                 .compact();
 
         log.debug("Created jwt {} for {}", jws, username);
+        return jws;
+    }
+
+    public String signup(String email, String username, String password) throws SignupException {
+        if (userRepository.existsByEmail(email)) {
+            throw new SignupException("Email is already taken");
+        }
+
+        if (userRepository.existsByUsername(username)) {
+            throw new SignupException("Username is already taken");
+        }
+
+        password = encryptPassword(password);
+
+        User user = new User();
+        user.setEmail(email);
+        user.setUsername(username);
+        user.setPassword(password);
+
+        userRepository.save(user);
+
+        String jws = Jwts
+                .builder()
+                .subject(username)
+                .issuedAt(new Date())
+                .signWith(jwtKey)
+                .compact();
+
+        log.debug("registered user {} and generated jws {}", user, jws);
         return jws;
     }
 

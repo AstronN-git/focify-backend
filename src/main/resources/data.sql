@@ -1,1 +1,1 @@
-insert into tb_users (username, password) values ('Maxim', '$2a$12$hJZt5kGT4hi5uveS3Rh7vu.OB4scEUhgxinHXqHQL.ojM.8GTy6Fu');
+insert into tb_users (email, username, password) values ('mail@mailservice.com', 'Maxim', '$2a$12$hJZt5kGT4hi5uveS3Rh7vu.OB4scEUhgxinHXqHQL.ojM.8GTy6Fu');
