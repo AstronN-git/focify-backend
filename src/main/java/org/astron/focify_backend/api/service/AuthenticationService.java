@@ -1,7 +1,7 @@
 package org.astron.focify_backend.api.service;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class AuthenticationService {
     private final SecretKey jwtKey;
     private final UserRepository userRepository;
 
-    public AuthenticationService(@Value("${JWT_KEY}") String jwtKeyString, UserRepository userRepository)  {
+    public AuthenticationService(@Value("${JWT_KEY}") String jwtKeyString, UserRepository userRepository) {
         jwtKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtKeyString));
         this.userRepository = userRepository;
     }
@@ -77,6 +77,23 @@ public class AuthenticationService {
 
         log.debug("registered user {} and generated jws {}", user, jws);
         return jws;
+    }
+
+    public User processToken(String token) {
+        var parser = Jwts.parser().verifyWith(jwtKey).build();
+
+        Jws<Claims> jwt;
+
+        try {
+            jwt = parser.parseSignedClaims(token);
+        } catch (JwtException exception) {
+            throw new AuthenticationException("Invalid token");
+        }
+
+        Claims claims = jwt.getPayload();
+        String username = claims.getSubject();
+
+        return userRepository.findByUsername(username).orElseThrow(() -> new AuthenticationException("Invalid token"));
     }
 
     private String encryptPassword(String password) {
