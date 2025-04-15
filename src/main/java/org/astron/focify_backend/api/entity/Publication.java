@@ -19,9 +19,9 @@ public class Publication {
 
     @ToString.Exclude
     @ManyToOne
-    private User user;
+    private User author;
 
-    private long duration;
+    private Long duration;
 
     @Column(length = 500)
     private String description;
