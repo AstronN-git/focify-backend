@@ -80,6 +80,12 @@ public class AuthenticationService {
     }
 
     public User processToken(String token) {
+        if (!token.startsWith("Bearer ")) {
+            throw new AuthenticationException("Invalid token");
+        }
+
+        token = token.substring("Bearer ".length());
+
         var parser = Jwts.parser().verifyWith(jwtKey).build();
 
         Jws<Claims> jwt;

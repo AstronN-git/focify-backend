@@ -35,7 +35,10 @@ public class PublicationsController {
     }
 
     @PostMapping("/publishSession")
-    ResponseEntity<PublishSessionResponse> publishSession(@RequestBody PublishSessionRequest publishSessionRequest) {
+    ResponseEntity<PublishSessionResponse> publishSession(
+            @RequestHeader("Authorization") String authorizationToken,
+            @RequestBody PublishSessionRequest publishSessionRequest
+    ) {
         Set<ConstraintViolation<PublishSessionRequest>> violations = validator.validate(publishSessionRequest);
         List<String> errors = violations.stream().map(ConstraintViolation::getMessage).toList();
 
@@ -44,12 +47,10 @@ public class PublicationsController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        String token = publishSessionRequest.getToken();
-
         User currentUser;
 
         try {
-            currentUser = authenticationService.processToken(token);
+            currentUser = authenticationService.processToken(authorizationToken);
         } catch (AuthenticationException exception) {
             PublishSessionResponse response = PublishSessionResponse.builder().error(exception.getMessage()).build();
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
@@ -68,25 +69,20 @@ public class PublicationsController {
     }
 
     @GetMapping("/userPublications")
-    ResponseEntity<GetUserPublicationsReponse> getUserPublications(@RequestBody GetUserPublicationsRequest getUserPublicationsRequest) {
-        Set<ConstraintViolation<GetUserPublicationsRequest>> constraintViolations = validator.validate(getUserPublicationsRequest);
-        List<String> errors = constraintViolations.stream().map(ConstraintViolation::getMessage).toList();
-
-        if (!errors.isEmpty()) {
-            GetUserPublicationsReponse response = GetUserPublicationsReponse.builder().error(errors.getFirst()).build();
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-
+    ResponseEntity<GetUserPublicationsReponse> getUserPublications(
+            @RequestHeader("Authorization") String authorizationToken,
+            @RequestParam(name = "author", required = false) String authorParam
+    ) {
         User currentUser;
 
         try {
-            currentUser = authenticationService.processToken(getUserPublicationsRequest.getToken());
+            currentUser = authenticationService.processToken(authorizationToken);
         } catch (AuthenticationException exception) {
             GetUserPublicationsReponse response = GetUserPublicationsReponse.builder().error(exception.getMessage()).build();
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
-        String authorUsername = Optional.ofNullable(getUserPublicationsRequest.getAuthor()).orElse(currentUser.getUsername());
+        String authorUsername = Optional.ofNullable(authorParam).orElse(currentUser.getUsername());
 
         Optional<User> authorOptional = userRepository.findByUsername(authorUsername);
 
@@ -98,7 +94,8 @@ public class PublicationsController {
         User author = authorOptional.get();
 
         List<Publication> publications = publicationRepository.findByAuthor(author);
-        List<PublicationDto> publicationDtoList = publications.stream().map(it -> new PublicationDto(authorUsername, it.getDescription(), it.getDuration())).toList();
+        List<PublicationDto> publicationDtoList = publications.stream().map(it ->
+                new PublicationDto(authorUsername, it.getDescription(), it.getDuration())).toList();
 
         GetUserPublicationsReponse response = GetUserPublicationsReponse.builder().publications(publicationDtoList).build();
         return new ResponseEntity<>(response, HttpStatus.OK);

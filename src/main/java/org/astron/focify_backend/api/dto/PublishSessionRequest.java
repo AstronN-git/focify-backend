@@ -8,9 +8,6 @@ import org.hibernate.validator.constraints.Length;
 @Data
 @AllArgsConstructor
 public class PublishSessionRequest {
-    @NotNull(message = "Token must not be null")
-    private String token;
-
     @NotNull(message = "Duration must not be null")
     private long duration;
 
