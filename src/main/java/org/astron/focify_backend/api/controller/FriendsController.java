@@ -1,8 +1,8 @@
 package org.astron.focify_backend.api.controller;
 
-import org.astron.focify_backend.api.dto.AddFriendRequest;
-import org.astron.focify_backend.api.dto.GetFriendsResponse;
-import org.astron.focify_backend.api.dto.UserDto;
+import org.astron.focify_backend.api.dto.friends.AddFriendRequest;
+import org.astron.focify_backend.api.dto.friends.GetFriendsResponse;
+import org.astron.focify_backend.api.dto.entity.UserDto;
 import org.astron.focify_backend.api.entity.User;
 import org.astron.focify_backend.api.exception.AuthenticationException;
 import org.astron.focify_backend.api.exception.UsernameNotFoundException;
@@ -11,8 +11,6 @@ import org.astron.focify_backend.api.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/friends")

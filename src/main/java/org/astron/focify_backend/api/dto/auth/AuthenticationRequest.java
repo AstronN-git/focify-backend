@@ -1,4 +1,4 @@
-package org.astron.focify_backend.api.dto;
+package org.astron.focify_backend.api.dto.auth;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

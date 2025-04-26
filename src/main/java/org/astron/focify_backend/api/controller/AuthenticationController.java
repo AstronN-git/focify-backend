@@ -2,10 +2,10 @@ package org.astron.focify_backend.api.controller;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import org.astron.focify_backend.api.dto.AuthenticationRequest;
-import org.astron.focify_backend.api.dto.AuthenticationResponse;
-import org.astron.focify_backend.api.dto.SignupRequest;
-import org.astron.focify_backend.api.dto.SignupResponse;
+import org.astron.focify_backend.api.dto.auth.AuthenticationRequest;
+import org.astron.focify_backend.api.dto.auth.AuthenticationResponse;
+import org.astron.focify_backend.api.dto.auth.SignupRequest;
+import org.astron.focify_backend.api.dto.auth.SignupResponse;
 import org.astron.focify_backend.api.exception.AuthenticationException;
 import org.astron.focify_backend.api.exception.SignupException;
 import org.astron.focify_backend.api.service.AuthenticationService;

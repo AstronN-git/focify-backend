@@ -1,4 +1,4 @@
-package org.astron.focify_backend.api.dto;
+package org.astron.focify_backend.api.dto.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
