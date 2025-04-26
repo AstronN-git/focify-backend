@@ -8,8 +8,8 @@ import org.astron.focify_backend.api.entity.Publication;
 import org.astron.focify_backend.api.entity.User;
 import org.astron.focify_backend.api.exception.AuthenticationException;
 import org.astron.focify_backend.api.repository.PublicationRepository;
-import org.astron.focify_backend.api.repository.UserRepository;
 import org.astron.focify_backend.api.service.AuthenticationService;
+import org.astron.focify_backend.api.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,13 +25,13 @@ public class PublicationsController {
     private final AuthenticationService authenticationService;
     private final PublicationRepository publicationRepository;
     private final Validator validator;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public PublicationsController(AuthenticationService authenticationService, PublicationRepository publicationRepository, Validator validator, UserRepository userRepository) {
+    public PublicationsController(AuthenticationService authenticationService, PublicationRepository publicationRepository, Validator validator, UserService userService) {
         this.authenticationService = authenticationService;
         this.publicationRepository = publicationRepository;
         this.validator = validator;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @PostMapping("/publishSession")
@@ -84,7 +84,7 @@ public class PublicationsController {
 
         String authorUsername = Optional.ofNullable(authorParam).orElse(currentUser.getUsername());
 
-        Optional<User> authorOptional = userRepository.findByUsername(authorUsername);
+        Optional<User> authorOptional = userService.findByUsername(authorUsername);
 
         if (authorOptional.isEmpty()) {
             GetUserPublicationsReponse response = GetUserPublicationsReponse.builder().error("Invalid author").build();

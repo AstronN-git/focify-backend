@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @ToString
@@ -24,4 +27,8 @@ public class User {
     private String email;
     private String username;
     private String password;
+
+    @ManyToMany
+    @ToString.Exclude
+    private Set<User> friends = new HashSet<>();
 }
