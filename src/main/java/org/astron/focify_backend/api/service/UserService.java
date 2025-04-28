@@ -5,6 +5,7 @@ import org.astron.focify_backend.api.exception.UsernameNotFoundException;
 import org.astron.focify_backend.api.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -17,6 +18,10 @@ public class UserService {
 
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    public List<User> findByUsernameSubstring(String usernameSubstring) {
+        return userRepository.findByUsernameLikeIgnoreCase("%" + usernameSubstring + "%");
     }
 
     public void addFriend(User user, String friendUsername) {
