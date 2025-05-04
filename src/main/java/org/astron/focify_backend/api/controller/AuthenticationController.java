@@ -46,7 +46,7 @@ public class AuthenticationController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (AuthenticationException exception) {
             AuthenticationResponse response = AuthenticationResponse.builder().error("Incorrect username/password").build();
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
     }
 

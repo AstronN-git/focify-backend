@@ -1,0 +1,354 @@
+openapi: 3.1.0
+info:
+  title: Focify API
+  description: Api for focify backend
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/
+paths:
+  /auth/authenticate:
+    post:
+      tags:
+        - Authentication
+      summary: "Authenticate user"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+            example:
+              username: "user"
+              password: "qwerty123"
+        required: true
+      responses:
+        200:
+          description: "Authentication successful. Returns JWT token in token field"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+              example:
+                token: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNTE2MjM5MDIyfQ.cFQakGqdYdOmZFv3_caY7cfjZyaiUUdxx61_vIJy9Vo"
+        401:
+          description: "Wrong user credentials. Returns error in error field"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Incorrect username/password"
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: "Register new user"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: string
+                username: string
+                password: string
+            example:
+              email: "mail1@mailservice.org"
+              username: "user1398"
+              password: "pass!!word??"
+        required: true
+      responses:
+        200:
+          description: "User registered. Returns JWT authentication token for him"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+              example:
+                token: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMTM5OCIsImlhdCI6MTUxNjIzOTAyMn0.8qyPiMTERqrA8PjEoWzzbtWove6Ehm49o3ltA5rqJvw"
+        400:
+          description: "User not registered. Email/username already taken"
+          content:
+            applications/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Username is already taken"
+  /friends/allFriends:
+    get:
+      tags:
+        - Friends
+      summary: "Get all friends of current user"
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+      responses:
+        200:
+          description: "Returns list of all users that are friends of current one"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  friends:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+              example:
+                friends:
+                  - username: "user1"
+                  - username: "user35"
+                  - username: "user61"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+  /friends/searchUsers:
+    get:
+      tags:
+        - Friends
+      summary: "Search for users"
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - in: query
+          name: "sample"
+          description: "Sample for user search"
+          schema:
+            type: string
+            example: "user13"
+          required: true
+      responses:
+        200:
+          description: "Returns result list of users. Not restricted by length (for now)"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  friends:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+              example:
+                friends:
+                  - username: "user1"
+                  - username: "user35"
+                  - username: "user61"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+  /friends/addFriend:
+    post:
+      tags:
+        - Friends
+      summary: "Add friend"
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+      requestBody:
+        content:
+          applications/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+              example:
+                username: "user13"
+        required: true
+      responses:
+        200:
+          description: "Friend added. Returns nothing."
+        400:
+          description: "Invalid friend username. Returns nothing."
+        401:
+          description: "Invalid authentication token. Returns nothing."
+  /publications/userPublications:
+    get:
+      tags:
+        - Publications
+      summary: "Get all user's publications"
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - in: query
+          name: "author"
+          required: false
+          schema:
+            type: string
+            example: "sampleUser"
+          description: "If present, returns `author`'s publications. If not, then current user's."
+      responses:
+        200:
+          description: "Returns all publications of `author` or current user"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  publications:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Publication"
+                example:
+                  publications:
+                    - author: "sampleUser"
+                      description: "Was doing some work"
+                      duration: 2500
+                      createdAt: "2025-05-04T08:13:47.289+00:00"
+                    - author: "sampleUser"
+                      description: "Studying for exams"
+                      duration: 3415
+                      createdAt: "2025-05-03T08:15:12.875+00:00"
+        400:
+          description: "`author` is present, but no user with this username"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Invalid author"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+  /publications/publishSession:
+    post:
+      summary: "Publish session"
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                duration:
+                  type: integer
+                  format: int64
+                description:
+                  type: string
+                  maxLength: 500
+        required: true
+      responses:
+        200:
+          description: "Session published. Returns nothing"
+        400:
+          description: "Request body validation unsuccessful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                error: "Description is too long"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+  /feed/buildFeed:
+    get:
+      tags:
+        - Feed
+      summary: "Build feed for current user"
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+        - name: "page"
+          in: query
+          required: true
+          description: "Page of publications of size `pageSize` (used for pagination)"
+          schema:
+            type: integer
+            format: int32
+          example: 2
+        - name: "pageSize"
+          in: query
+          required: true
+          description: "Number of returned publications (used for pagination). Should be in range `[1 .. 50]`"
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 50
+          example: 20
+      responses:
+        200:
+          description: "Feed built. Returns list of publications in feed of size `pageSize` or less, if there are no more publications"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  publications:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Publication"
+                example:
+                  publications:
+                    - author: "user13"
+                      description: "Was doing some work"
+                      duration: 2500
+                      createdAt: "2025-05-04T08:13:47.289+00:00"
+                    - author: "user65"
+                      description: "Studying for exams"
+                      duration: 3415
+                      createdAt: "2025-05-03T08:15:12.875+00:00"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+  /ping:
+    get:
+      tags:
+        - Other
+      summary: "Ping server"
+      responses:
+        200:
+          description: "Server is alive. Always returns 200 OK"
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: "ok"
+
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+    Publication:
+      type: object
+      properties:
+        author:
+          type: string
+        description:
+          type: string
+        duration:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+  responses:
+    InvalidToken:
+      description: "Authentication token is invalid"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: "Invalid token"
+  parameters:
+    Authorization:
+      in: header
+      name: "Authorization"
+      description: "Authentication JWT token"
+      schema:
+        type: string
+        example: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNTE2MjM5MDIyfQ.cFQakGqdYdOmZFv3_caY7cfjZyaiUUdxx61_vIJy9Vo"
+      required: true

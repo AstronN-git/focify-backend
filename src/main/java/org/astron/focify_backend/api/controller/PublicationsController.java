@@ -97,8 +97,7 @@ public class PublicationsController {
         User author = authorOptional.get();
 
         List<Publication> publications = publicationRepository.findByAuthor(author);
-        List<PublicationDto> publicationDtoList = publications.stream().map(it ->
-                new PublicationDto(authorUsername, it.getDescription(), it.getDuration())).toList();
+        List<PublicationDto> publicationDtoList = publications.stream().map(PublicationDto::new).toList();
 
         GetUserPublicationsReponse response = GetUserPublicationsReponse.builder().publications(publicationDtoList).build();
         return new ResponseEntity<>(response, HttpStatus.OK);

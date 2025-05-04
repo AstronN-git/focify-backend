@@ -1,12 +1,16 @@
 package org.astron.focify_backend.api.dto.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import org.astron.focify_backend.api.entity.Publication;
 
-@Data
-@AllArgsConstructor
-public class PublicationDto {
-    private String author;
-    private String description;
-    private Long duration;
+import java.util.Date;
+
+public record PublicationDto(String author, String description, Long duration, Date createdAt) {
+    public PublicationDto(Publication publication) {
+        this(
+                publication.getAuthor().getUsername(),
+                publication.getDescription(),
+                publication.getDuration(),
+                publication.getCreatedAt()
+        );
+    }
 }
