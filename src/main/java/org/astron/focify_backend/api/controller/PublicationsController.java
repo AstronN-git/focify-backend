@@ -50,14 +50,7 @@ public class PublicationsController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        User currentUser;
-
-        try {
-            currentUser = authenticationService.processToken(authorizationToken);
-        } catch (AuthenticationException exception) {
-            PublishSessionResponse response = PublishSessionResponse.builder().error(exception.getMessage()).build();
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-        }
+        User currentUser = authenticationService.processToken(authorizationToken);
 
         Publication publication = new Publication();
         publication.setAuthor(currentUser);
@@ -76,25 +69,22 @@ public class PublicationsController {
             @RequestHeader("Authorization") String authorizationToken,
             @RequestParam(name = "author", required = false) String authorParam
     ) {
-        User currentUser;
+        User currentUser = authenticationService.processToken(authorizationToken);
 
-        try {
-            currentUser = authenticationService.processToken(authorizationToken);
-        } catch (AuthenticationException exception) {
-            GetUserPublicationsReponse response = GetUserPublicationsReponse.builder().error(exception.getMessage()).build();
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        User author;
+
+        if (authorParam != null) {
+            Optional<User> authorOptional = userService.findByUsername(authorParam);
+
+            if (authorOptional.isEmpty()) {
+                GetUserPublicationsReponse response = GetUserPublicationsReponse.builder().error("Invalid author").build();
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+
+            author = authorOptional.get();
+        } else {
+            author = currentUser;
         }
-
-        String authorUsername = Optional.ofNullable(authorParam).orElse(currentUser.getUsername());
-
-        Optional<User> authorOptional = userService.findByUsername(authorUsername);
-
-        if (authorOptional.isEmpty()) {
-            GetUserPublicationsReponse response = GetUserPublicationsReponse.builder().error("Invalid author").build();
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-
-        User author = authorOptional.get();
 
         List<Publication> publications = publicationRepository.findByAuthor(author);
         List<PublicationDto> publicationDtoList = publications.stream().map(PublicationDto::new).toList();

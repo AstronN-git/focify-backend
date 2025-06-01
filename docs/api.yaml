@@ -216,6 +216,8 @@ paths:
           $ref: "#/components/responses/InvalidToken"
   /publications/publishSession:
     post:
+      tags:
+        - Publications
       summary: "Publish session"
       parameters:
         - $ref: "#/components/parameters/Authorization"

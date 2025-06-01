@@ -14,6 +14,6 @@ import java.util.List;
 public interface PublicationRepository extends CrudRepository<Publication, Long> {
     List<Publication> findByAuthor(User author);
 
-    @Query("select p from Publication p where p.author in (select u.friends from User u where u = ?1)")
+    @Query("select p from Publication p where p.author in (select u.friends from User u where u = ?1) order by p.createdAt desc")
     Page<Publication> buildFeed(User user, Pageable pageable);
 }

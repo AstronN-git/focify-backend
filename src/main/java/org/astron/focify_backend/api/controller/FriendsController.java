@@ -29,13 +29,7 @@ public class FriendsController {
             @RequestHeader("Authorization") String authorizationToken,
             @RequestBody AddFriendRequest addFriendRequest
     ) {
-        User currentUser;
-
-        try {
-            currentUser = authenticationService.processToken(authorizationToken);
-        } catch (AuthenticationException exception) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        User currentUser = authenticationService.processToken(authorizationToken);
 
         try {
             userService.addFriend(currentUser, addFriendRequest.getUsername());
@@ -50,13 +44,7 @@ public class FriendsController {
     public ResponseEntity<GetFriendsResponse> getFriends(
             @RequestHeader("Authorization") String authorizationToken
     ) {
-        User currentUser;
-
-        try {
-            currentUser = authenticationService.processToken(authorizationToken);
-        } catch (AuthenticationException exception) {
-            return new ResponseEntity<>(GetFriendsResponse.builder().error(exception.getMessage()).build(), HttpStatus.UNAUTHORIZED);
-        }
+        User currentUser = authenticationService.processToken(authorizationToken);
 
         var friends = currentUser.getFriends().stream().map(UserDto::new).toList();
 
@@ -68,11 +56,7 @@ public class FriendsController {
             @RequestHeader("Authorization") String authorizationToken,
             @RequestParam("sample") String usernameSample
     ) {
-        try {
-            authenticationService.processToken(authorizationToken);
-        } catch (AuthenticationException exception) {
-            return new ResponseEntity<>(SearchUsersResponse.builder().error(exception.getMessage()).build(), HttpStatus.UNAUTHORIZED);
-        }
+        authenticationService.processToken(authorizationToken);
 
         var users = userService.findByUsernameSubstring(usernameSample).stream().map(UserDto::new).toList();
 

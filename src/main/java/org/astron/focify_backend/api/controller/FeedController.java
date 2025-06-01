@@ -34,13 +34,7 @@ public class FeedController {
             @RequestParam Integer page,
             @RequestParam @Min(1) @Max(50) Integer pageSize
     ) {
-        User currentUser;
-
-        try {
-            currentUser = authenticationService.processToken(token);
-        } catch (AuthenticationException exception) {
-            return new ResponseEntity<>(BuildFeedResponse.builder().error(exception.getMessage()).build(), HttpStatus.UNAUTHORIZED);
-        }
+        User currentUser = authenticationService.processToken(token);
 
         Pageable pageable = PageRequest.of(page, pageSize);
 

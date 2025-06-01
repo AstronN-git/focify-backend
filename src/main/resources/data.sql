@@ -9,3 +9,6 @@ insert into tb_publications (author_id, duration, description) values
                                                      (1, 2300, 'Gone to school'),
                                                      (2, 1500, 'Watched math lecture'),
                                                      (2, 2500, 'Made all homework for tomorrow');
+
+insert into tb_publications (author_id, duration, description, created_at) values
+                                                     (2, 1366, 'Was preparing for my math exam while listening to LoFi girl', '2025-05-03 13:45:12')
