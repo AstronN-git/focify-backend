@@ -233,6 +233,10 @@ paths:
                 description:
                   type: string
                   maxLength: 500
+                date:
+                  type: string
+                  format: iso8601 datetime
+                  example: '2018-08-18T00:00:00+1000'
         required: true
       responses:
         200:

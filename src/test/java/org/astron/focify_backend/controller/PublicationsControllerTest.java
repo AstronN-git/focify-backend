@@ -5,7 +5,7 @@ import org.astron.focify_backend.api.controller.PublicationsController;
 import org.astron.focify_backend.api.dto.publications.PublishSessionRequest;
 import org.astron.focify_backend.api.entity.Publication;
 import org.astron.focify_backend.api.entity.User;
-import org.astron.focify_backend.api.exception.AuthenticationException;
+import org.astron.focify_backend.api.exception.InvalidTokenException;
 import org.astron.focify_backend.api.repository.PublicationRepository;
 import org.astron.focify_backend.api.service.AuthenticationService;
 import org.astron.focify_backend.api.service.UserService;
@@ -16,13 +16,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -54,7 +54,7 @@ public class PublicationsControllerTest {
 
         String content = objectMapper.writeValueAsString(publishSessionRequest);
 
-        when(authenticationService.processToken(any())).thenThrow(new AuthenticationException("invalid token"));
+        when(authenticationService.processToken(any())).thenThrow(new InvalidTokenException("invalid token"));
 
         mockMvc.perform(
                 post("/api/publications/publishSession")
@@ -104,13 +104,12 @@ public class PublicationsControllerTest {
 
         when(authenticationService.processToken("Bearer " + jwt)).thenReturn(user);
         when(publicationRepository.save(any())).then(invocation -> {
-                    var publication = invocation.<Publication>getArgument(0);
-                    assertThat(publication.getDuration()).isEqualTo(1111L);
-                    assertThat(publication.getDescription()).isEqualTo("description");
-                    assertThat(publication.getAuthor()).isEqualTo(user);
-                    return publication;
-                }
-        );
+            var publication = invocation.<Publication>getArgument(0);
+            assertThat(publication.getDuration()).isEqualTo(1111L);
+            assertThat(publication.getDescription()).isEqualTo("description");
+            assertThat(publication.getAuthor()).isEqualTo(user);
+            return publication;
+        });
 
         mockMvc.perform(
                 post("/api/publications/publishSession")
@@ -124,8 +123,41 @@ public class PublicationsControllerTest {
     }
 
     @Test
+    void testPublishSessionWithCustomCreationDate() throws Exception {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
+        PublishSessionRequest publishSessionRequest = new PublishSessionRequest();
+        publishSessionRequest.setDuration(1111L);
+        publishSessionRequest.setDescription("description");
+        publishSessionRequest.setCreatedAt(simpleDateFormat.parse("2024-05-20T13:02:24"));
+        String content = objectMapper.writeValueAsString(publishSessionRequest);
+
+        User user = new User();
+
+        when(authenticationService.processToken("Bearer " + jwt)).thenReturn(user);
+        when(publicationRepository.save(any())).then(invocation -> {
+            var publication = invocation.<Publication>getArgument(0);
+            assertThat(publication.getDuration()).isEqualTo(1111L);
+            assertThat(publication.getDescription()).isEqualTo("description");
+            assertThat(publication.getAuthor()).isEqualTo(user);
+            assertThat(publication.getCreatedAt()).isEqualTo(simpleDateFormat.parse("2024-05-20T13:02:24"));
+            return publication;
+        });
+
+        mockMvc.perform(
+                post("/api/publications/publishSession")
+                .header("Authorization", "Bearer " + jwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+        ).andExpect(status().isOk());
+
+        verify(authenticationService).processToken("Bearer " + jwt);
+        verify(publicationRepository, times(1)).save(any());
+    }
+
+    @Test
     void testUserPublicationsReturnsUnauthorizedOnWrongToken() throws Exception {
-        when(authenticationService.processToken(any())).thenThrow(new AuthenticationException("invalid token"));
+        when(authenticationService.processToken(any())).thenThrow(new InvalidTokenException("invalid token"));
 
         mockMvc.perform(get("/api/publications/userPublications")
                 .header("Authorization", "Bearer invalid")
@@ -169,7 +201,8 @@ public class PublicationsControllerTest {
         )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("publications").isArray())
-                .andExpect(jsonPath("publications[0].author").value(user.getUsername()));
+                .andExpect(jsonPath("publications[0].author").value(user.getUsername()))
+                .andExpect(jsonPath("publications[0].author_id").value(user.getId()));
 
         verify(publicationRepository, times(1)).findByAuthor(user);
     }
@@ -198,7 +231,8 @@ public class PublicationsControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("publications").isArray())
-                .andExpect(jsonPath("publications[0].author").value(author.getUsername()));
+                .andExpect(jsonPath("publications[0].author").value(author.getUsername()))
+                .andExpect(jsonPath("publications[0].author_id").value(author.getId()));
 
         verify(userService, times(1)).findByUsername("author");
         verify(publicationRepository, times(1)).findByAuthor(author);

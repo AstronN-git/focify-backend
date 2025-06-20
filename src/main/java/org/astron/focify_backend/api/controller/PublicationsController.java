@@ -9,7 +9,6 @@ import org.astron.focify_backend.api.dto.publications.PublishSessionRequest;
 import org.astron.focify_backend.api.dto.publications.PublishSessionResponse;
 import org.astron.focify_backend.api.entity.Publication;
 import org.astron.focify_backend.api.entity.User;
-import org.astron.focify_backend.api.exception.AuthenticationException;
 import org.astron.focify_backend.api.repository.PublicationRepository;
 import org.astron.focify_backend.api.service.AuthenticationService;
 import org.astron.focify_backend.api.service.UserService;
@@ -17,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 import java.util.List;
@@ -56,6 +56,12 @@ public class PublicationsController {
         publication.setAuthor(currentUser);
         publication.setDuration(publishSessionRequest.getDuration());
         publication.setDescription(publishSessionRequest.getDescription());
+
+        if (publishSessionRequest.getCreatedAt() != null) {
+            publication.setCreatedAt(publishSessionRequest.getCreatedAt());
+        } else {
+            publication.setCreatedAt(new Date());
+        }
 
         log.debug("Publish request with user {} and publication {}", currentUser, publication);
 

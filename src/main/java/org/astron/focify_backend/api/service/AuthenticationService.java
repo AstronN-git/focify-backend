@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.astron.focify_backend.api.entity.User;
 import org.astron.focify_backend.api.exception.AuthenticationException;
+import org.astron.focify_backend.api.exception.InvalidTokenException;
 import org.astron.focify_backend.api.exception.SignupException;
 import org.astron.focify_backend.api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,7 +82,7 @@ public class AuthenticationService {
 
     public User processToken(String token) {
         if (!token.startsWith("Bearer ")) {
-            throw new AuthenticationException("Invalid token");
+            throw new InvalidTokenException("Invalid token");
         }
 
         token = token.substring("Bearer ".length());
@@ -93,13 +94,13 @@ public class AuthenticationService {
         try {
             jwt = parser.parseSignedClaims(token);
         } catch (JwtException exception) {
-            throw new AuthenticationException("Invalid token");
+            throw new InvalidTokenException("Invalid token");
         }
 
         Claims claims = jwt.getPayload();
         String username = claims.getSubject();
 
-        return userRepository.findByUsername(username).orElseThrow(() -> new AuthenticationException("Invalid token"));
+        return userRepository.findByUsername(username).orElseThrow(() -> new InvalidTokenException("Invalid token"));
     }
 
     private String encryptPassword(String password) {

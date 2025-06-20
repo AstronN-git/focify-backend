@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 
+import java.util.Date;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,4 +18,6 @@ public class PublishSessionRequest {
     @NotNull(message = "Description must not be null")
     @Length(max = 500, message = "Description is too long")
     private String description;
+
+    private Date createdAt;
 }
